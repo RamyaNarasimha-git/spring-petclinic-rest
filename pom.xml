@@ -344,8 +344,8 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <groupId>org.openapitools</groupId>
+             <plugin>
+              <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
                 <!-- RELEASE_VERSION -->
                 <version>${maven.openapi-generator-plugin.version}</version>
@@ -363,7 +363,7 @@
                             <!-- Only enabling model andopenapi-generator-maven-plugin API generation -->
                             <modelNameSuffix>Dto</modelNameSuffix>
                             <apiPackage>org.springframework.samples.petclinic.rest.api</apiPackage>
-                            <generateModels>true</generateModels>
+                            <generateModels>false</generateModels>
                             <modelPackage>org.springframework.samples.petclinic.rest.dto</modelPackage>
                             <generateApis>true</generateApis>
                             <importMappings>
