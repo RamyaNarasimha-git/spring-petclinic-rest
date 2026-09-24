@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -48,6 +49,7 @@ public class VisitFieldsDto {
    * @return date
    */
   @Valid
+  @FutureOrPresent
   @Schema(name = "date", example = "2013-01-01", description = "The date of the visit.", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   @JsonProperty("date")
   public @Nullable LocalDate getDate() {
@@ -116,4 +118,3 @@ public class VisitFieldsDto {
     return o == null ? "null" : o.toString().replace("\n", "\n    ");
   }
 }
-

@@ -20,6 +20,8 @@ import org.springframework.samples.petclinic.rest.controller.v1.VisitRestControl
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -42,7 +44,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -54,7 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration(classes=ApplicationTestConfig.class)
 @WebAppConfiguration
-class VisitRestControllerV1Tests {
+class VisitRestControllerTests {
 
     @Autowired
     private VisitRestControllerV1 visitRestControllerV1;
@@ -95,11 +99,11 @@ class VisitRestControllerV1Tests {
         pet.setBirthDate(LocalDate.now());
     	pet.setOwner(owner);
     	pet.setType(petType);
-
+        when(this.clinicService.findPetById(8)).thenReturn(pet);
 
     	Visit visit = new Visit();
     	visit.setId(2);
-    	visit.setPet(pet);
+    	visit.setPet(this.clinicService.findPetById(8));
         visit.setDate(LocalDate.now());
     	visit.setDescription("rabies shot");
     	visits.add(visit);
@@ -185,6 +189,25 @@ class VisitRestControllerV1Tests {
         		.andExpect(status().isInternalServerError());
      }
 
+    @ParameterizedTest
+    @CsvSource({"2000-01-01", "2020-02-29"})
+    @WithMockUser(roles="OWNER_ADMIN")
+    void testCreateVisitWithPastDateReturnsBadRequest(String pastDate) throws Exception {
+        String visitJson = """
+            {"date":"%s","description":"rabies shot","id":999,"petId":8}
+            """.formatted(pastDate);
+
+        int status = this.mockMvc.perform(post("/api/visits")
+                .content(visitJson)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andReturn()
+            .getResponse()
+            .getStatus();
+
+        assertThat(status).isEqualTo(400);
+    }
+
     @Test
     @WithMockUser(roles="OWNER_ADMIN")
     void testUpdateVisitSuccess() throws Exception {
@@ -195,7 +218,6 @@ class VisitRestControllerV1Tests {
         String newVisitAsJSON = mapper.writeValueAsString(visitMapper.toVisitDto(newVisit));
     	this.mockMvc.perform(put("/api/visits/2")
     		.content(newVisitAsJSON).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
-        	.andExpect(content().contentType("application/json"))
         	.andExpect(status().isNoContent());
 
     	this.mockMvc.perform(get("/api/visits/2")
@@ -217,6 +239,26 @@ class VisitRestControllerV1Tests {
     		.content(newVisitAsJSON).accept(MediaType.APPLICATION_JSON_VALUE).contentType(MediaType.APPLICATION_JSON_VALUE))
         	.andExpect(status().isBadRequest());
      }
+
+    @ParameterizedTest
+    @CsvSource({"2000-01-01", "2020-02-29"})
+    @WithMockUser(roles="OWNER_ADMIN")
+    void testUpdateVisitWithPastDateReturnsBadRequest(String pastDate) throws Exception {
+        given(this.clinicService.findVisitById(2)).willReturn(visits.get(0));
+        String visitJson = """
+            {"date":"%s","description":"rabies shot"}
+            """.formatted(pastDate);
+
+        int status = this.mockMvc.perform(put("/api/visits/2")
+                .content(visitJson)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andReturn()
+            .getResponse()
+            .getStatus();
+
+        assertThat(status).isEqualTo(400);
+    }
 
     @Test
     @WithMockUser(roles="OWNER_ADMIN")

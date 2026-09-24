@@ -7,6 +7,7 @@ import jakarta.annotation.Generated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,6 +25,7 @@ public record VisitDto(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Nullable
     @Valid
+    @FutureOrPresent
     @Schema(name = "date", example = "2013-01-01", description = "The date of the visit.", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     @JsonProperty("date")
     LocalDate date,
@@ -61,4 +63,3 @@ public record VisitDto(
     }
   }
 }
-
