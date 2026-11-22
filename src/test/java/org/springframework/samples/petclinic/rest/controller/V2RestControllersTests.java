@@ -80,13 +80,13 @@ public class V2RestControllersTests {
             .name("dog");
 
         pets = new ArrayList<>();
-        PetDto pet = new PetDto();
+        PetDto pet = new PetDto(null, null, null, null, List.of());
         pets.add(pet.id(3)
             .name("Rosy")
             .birthDate(LocalDate.now())
             .type(petType));
 
-        pet = new PetDto();
+        pet = new PetDto(null, null, null, null, List.of());
         pets.add(pet.id(4)
             .name("Jewel")
             .birthDate(LocalDate.now())

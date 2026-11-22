@@ -88,13 +88,13 @@ class PetRestControllerV1Tests {
         petType.id(2)
             .name("dog");
 
-        PetDto pet = new PetDto();
+        PetDto pet = new PetDto(null, null, null, null, List.of());
         pets.add(pet.id(3)
             .name("Rosy")
             .birthDate(LocalDate.now())
             .type(petType));
 
-        pet = new PetDto();
+        pet = new PetDto(null, null, null, null, List.of());
         pets.add(pet.id(4)
             .name("Jewel")
             .birthDate(LocalDate.now())
@@ -153,7 +153,7 @@ class PetRestControllerV1Tests {
     void testUpdatePetSuccess() throws Exception {
         given(this.clinicService.findPetById(3)).willReturn(petMapper.toPet(pets.get(0)));
         PetDto newPet = pets.get(0);
-        newPet.setName("Rosy I");
+        newPet = newPet.name("Rosy I");
         ObjectMapper mapper = new ObjectMapper();
 
         String newPetAsJSON = mapper.writeValueAsString(newPet);
@@ -175,7 +175,7 @@ class PetRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testUpdatePetError() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setName(null);
+        newPet = newPet.name(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
 
@@ -188,7 +188,7 @@ class PetRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testUpdatePetWithEmptyNameShouldReturnBadRequest() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setName("");
+        newPet = newPet.name("");
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
 
@@ -203,7 +203,7 @@ class PetRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testUpdatePetWithoutBirthDateShouldReturnBadRequest() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setBirthDate(null);
+        newPet = newPet.birthDate(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
 

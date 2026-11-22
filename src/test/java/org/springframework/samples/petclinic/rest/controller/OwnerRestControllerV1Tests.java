@@ -110,43 +110,38 @@ class OwnerRestControllerV1Tests {
             .name("dog");
 
         pets = new ArrayList<>();
-        PetDto pet = new PetDto();
+        PetDto pet = new PetDto(null, null, null, null, List.of());
         pets.add(pet.id(3)
             .name("Rosy")
             .birthDate(LocalDate.now())
             .type(petType));
 
-        pet = new PetDto();
+        pet = new PetDto(null, null, null, null, List.of());
         pets.add(pet.id(4)
             .name("Jewel")
             .birthDate(LocalDate.now())
             .type(petType));
 
         visits = new ArrayList<>();
-        VisitDto visit = new VisitDto();
-        visit.setId(2);
-        visit.setPetId(pet.getId());
-        visit.setDate(LocalDate.now());
-        visit.setDescription("rabies shot");
+        VisitDto visit = new VisitDto(null, null, null, null);
+        visit = visit.id(2).petId(pet.getId()).date(LocalDate.now()).description("rabies shot");
         visits.add(visit);
 
-        visit = new VisitDto();
-        visit.setId(3);
-        visit.setPetId(pet.getId());
-        visit.setDate(LocalDate.now());
-        visit.setDescription("neutered");
+        visit = new VisitDto(null, null, null, null)
+            .id(3).petId(pet.getId()).date(LocalDate.now()).description("neutered");
         visits.add(visit);
     }
 
     private PetDto getTestPetWithIdAndName(final int id, final String name) {
         PetTypeDto petType = new PetTypeDto();
-        PetDto pet = new PetDto();
-        pet.id(id).name(name).birthDate(LocalDate.now()).type(petType.id(2).name("dog")).addVisitsItem(getTestVisitForPet(1));
+        PetDto pet = new PetDto(null, null, null, null, List.of());
+        pet = pet.id(id).name(name).birthDate(LocalDate.now())
+            .type(petType.id(2).name("dog")).addVisitsItem(getTestVisitForPet(1));
         return pet;
     }
 
     private VisitDto getTestVisitForPet(final int id) {
-        VisitDto visit = new VisitDto();
+        VisitDto visit = new VisitDto(null, null, null, null);
         return visit.id(id).date(LocalDate.now()).description("test" + id);
     }
 
@@ -348,7 +343,7 @@ class OwnerRestControllerV1Tests {
         final Owner owner = ownerMapper.toOwner(owners.get(0));
         given(this.clinicService.findOwnerById(1)).willReturn(owner);
         PetDto newPet = pets.get(0);
-        newPet.setId(999);
+        newPet = newPet.id(999);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
         System.err.println("--> newPetAsJSON=" + newPetAsJSON);
@@ -361,8 +356,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetError() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
-        newPet.setName(null);
+        newPet = newPet.id(null).name(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
         this.mockMvc.perform(post("/api/owners/1/pets")
@@ -374,8 +368,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetWithEmptyNameShouldReturnBadRequest() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
-        newPet.setName("");
+        newPet = newPet.id(null).name("");
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
         this.mockMvc.perform(post("/api/owners/1/pets")
@@ -389,8 +382,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetWithoutBirthDateShouldReturnBadRequest() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
-        newPet.setBirthDate(null);
+        newPet = newPet.id(null).birthDate(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
         this.mockMvc.perform(post("/api/owners/1/pets")
@@ -404,7 +396,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetShouldNotExposeTechnicalDetails() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
+        newPet = newPet.id(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
         String technicalMessage = "could not execute statement; SQL [insert into pets ...]; constraint [fk_pet_owner]";
@@ -421,7 +413,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetWithUnknownOwnerShouldReturnNotFound() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
+        newPet = newPet.id(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
         given(this.clinicService.findOwnerById(1000000)).willReturn(null);
@@ -434,8 +426,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetWithNullTypeShouldReturnBadRequestWithGenericDetail() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
-        newPet.setType(null);
+        newPet = newPet.id(null).type(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
         this.mockMvc.perform(post("/api/owners/1/pets")
@@ -455,7 +446,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetWithEmptyTypeNameShouldReturnBadRequestWithGenericDetail() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
+        newPet = newPet.id(null);
         newPet.getType().setName("");
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
@@ -476,7 +467,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetWithNullTypeIdShouldReturnBadRequestWithGenericDetail() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
+        newPet = newPet.id(null);
         newPet.getType().setId(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
@@ -497,7 +488,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreatePetWithUnexpectedErrorShouldReturnInternalServerErrorWithGenericDetail() throws Exception {
         PetDto newPet = pets.get(0);
-        newPet.setId(null);
+        newPet = newPet.id(null);
         ObjectMapper mapper = new ObjectMapper();
         String newPetAsJSON = mapper.writeValueAsString(newPet);
         given(this.clinicService.findOwnerById(1)).willReturn(ownerMapper.toOwner(owners.get(0)));
@@ -534,7 +525,7 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreateVisitSuccess() throws Exception {
         VisitDto newVisit = visits.get(0);
-        newVisit.setId(999);
+        newVisit = newVisit.id(999);
         ObjectMapper mapper = new ObjectMapper();
         String newVisitAsJSON = mapper.writeValueAsString(visitMapper.toVisit(newVisit));
         System.out.println("newVisitAsJSON " + newVisitAsJSON);
@@ -547,8 +538,8 @@ class OwnerRestControllerV1Tests {
     @WithMockUser(roles = "OWNER_ADMIN")
     void testCreateVisitWithoutDateShouldReturnBadRequest() throws Exception {
         VisitDto newVisit = visits.get(0);
-        newVisit.setId(null);
-        newVisit.setDate(null);
+        newVisit = newVisit.id(null);
+        newVisit = newVisit.date(null);
         ObjectMapper mapper = new ObjectMapper();
         String newVisitAsJSON = mapper.writeValueAsString(newVisit);
         this.mockMvc.perform(post("/api/owners/1/pets/1/visits")
@@ -601,8 +592,7 @@ class OwnerRestControllerV1Tests {
         given(this.clinicService.findOwnerById(ownerId)).willReturn(ownerMapper.toOwner(owners.get(0)));
         given(this.clinicService.findPetById(petId)).willReturn(petMapper.toPet(pets.get(0)));
         PetDto updatedPetDto = pets.get(0);
-        updatedPetDto.setName("Rex");
-        updatedPetDto.setBirthDate(LocalDate.of(2020, 1, 15));
+        updatedPetDto = updatedPetDto.name("Rex").birthDate(LocalDate.of(2020, 1, 15));
         ObjectMapper mapper = new ObjectMapper();
         String updatedPetAsJSON = mapper.writeValueAsString(updatedPetDto);
         this.mockMvc.perform(put("/api/owners/" + ownerId + "/pets/" + petId)
@@ -619,7 +609,7 @@ class OwnerRestControllerV1Tests {
         int petId = pets.get(0).getId();
         given(this.clinicService.findOwnerById(ownerId)).willReturn(null);
         PetDto petDto = pets.get(0);
-        petDto.setName("Thor");
+        petDto = petDto.name("Thor");
         ObjectMapper mapper = new ObjectMapper();
         String updatedPetAsJSON = mapper.writeValueAsString(petDto);
         this.mockMvc.perform(put("/api/owners/" + ownerId + "/pets/" + petId)
@@ -636,8 +626,7 @@ class OwnerRestControllerV1Tests {
         given(this.clinicService.findOwnerById(ownerId)).willReturn(ownerMapper.toOwner(owners.get(0)));
         given(this.clinicService.findPetById(petId)).willReturn(null);
         PetDto petDto = pets.get(0);
-        petDto.setName("Ghost");
-        petDto.setBirthDate(LocalDate.of(2020, 1, 1));
+        petDto = petDto.name("Ghost").birthDate(LocalDate.of(2020, 1, 1));
         ObjectMapper mapper = new ObjectMapper();
         String updatedPetAsJSON = mapper.writeValueAsString(petDto);
         this.mockMvc.perform(put("/api/owners/" + ownerId + "/pets/" + petId)
@@ -652,7 +641,7 @@ class OwnerRestControllerV1Tests {
         int ownerId = owners.get(0).getId();
         int petId = pets.get(0).getId();
         PetDto petDto = pets.get(0);
-        petDto.setName("");
+        petDto = petDto.name("");
         ObjectMapper mapper = new ObjectMapper();
         String updatedPetAsJSON = mapper.writeValueAsString(petDto);
         this.mockMvc.perform(put("/api/owners/" + ownerId + "/pets/" + petId)
@@ -669,7 +658,7 @@ class OwnerRestControllerV1Tests {
         int ownerId = owners.get(0).getId();
         int petId = pets.get(0).getId();
         PetDto petDto = pets.get(0);
-        petDto.setBirthDate(null);
+        petDto = petDto.birthDate(null);
         ObjectMapper mapper = new ObjectMapper();
         String updatedPetAsJSON = mapper.writeValueAsString(petDto);
         this.mockMvc.perform(put("/api/owners/" + ownerId + "/pets/" + petId)
