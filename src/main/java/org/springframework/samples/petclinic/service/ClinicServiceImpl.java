@@ -29,6 +29,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.springframework.samples.petclinic.service.exception.PetNotFoundException;
+import org.springframework.samples.petclinic.service.exception.VisitConflictException;
 
 /**
  * Mostly used as a facade for all Petclinic controllers
@@ -219,8 +221,38 @@ public class ClinicServiceImpl implements ClinicService {
     @Override
     @Transactional
     public void saveVisit(Visit visit) throws DataAccessException {
-        visitRepository.save(visit);
+        Integer petId = visit.getPet() != null ? visit.getPet().getId() : null;
 
+        if (petId == null) {
+            throw new PetNotFoundException(null);
+        }
+
+        Pet persistedPet = petRepository.findById(petId);
+
+        if (persistedPet == null) {
+            throw new PetNotFoundException(petId);
+        }
+
+        visit.setPet(persistedPet);
+
+        List<Visit> existingVisits = visitRepository.findByPetId(petId);
+
+        for (Visit existingVisit : existingVisits) {
+            boolean sameDate = existingVisit.getDate() != null
+                && existingVisit.getDate().equals(visit.getDate());
+
+            boolean differentVisit = !java.util.Objects.equals(
+                existingVisit.getId(), visit.getId());
+
+            if (sameDate && differentVisit) {
+                throw new VisitConflictException(
+                    "date",
+                    String.valueOf(visit.getDate()),
+                    "A visit is already scheduled for this pet on this date");
+            }
+        }
+
+        visitRepository.save(visit);
     }
 
     @Override
